@@ -14,8 +14,8 @@
       padding: 0;
     }
     .container {
-      padding: 20px;
       position: relative; /* Allows absolute positioning of children */
+      width: 100%; /* Ensure full width */
     }
     .form-section {
       position: absolute;
@@ -71,12 +71,12 @@
       color: #f56565;
     }
     .stream-container {
-      margin-left: 320px; /* Slightly reduced to gain space */
+      margin-left: 320px; /* Space for forms */
       margin-top: 150px; /* Ensures streams start below forms */
+      margin-right: 0; /* Extend to the right edge */
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Reduced min width to fit 3 columns */
-      gap: 10px;
-      padding: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); /* Reverted to 400px for better stream width */
+      gap: 10px; /* Handles spacing between streams */
       min-height: 80vh;
       box-sizing: border-box;
     }
@@ -129,6 +129,12 @@
       cursor: pointer;
     }
     /* Responsive adjustments */
+    @media (max-width: 1200px) {
+      .stream-container {
+        grid-template-columns: repeat(3, 1fr); /* Force 3 columns */
+        overflow-x: auto; /* Allow horizontal scrolling if needed */
+      }
+    }
     @media (max-width: 1000px) {
       .form-section {
         position: static;
@@ -138,6 +144,8 @@
       .stream-container {
         margin-left: 0;
         margin-top: 0;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Smaller streams on mobile */
+        overflow-x: auto;
       }
       .donation-section {
         position: static;
