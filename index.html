@@ -1,0 +1,277 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tournament Twitch Feeds Display</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #1a202c;
+      color: white;
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      padding: 20px;
+    }
+    .form-section {
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .form-section div {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .form-section input[type="text"], .form-section select {
+      padding: 8px;
+      background-color: #2d3748;
+      color: white;
+      border: 1px solid #4a5568;
+      border-radius: 4px;
+      width: 200px;
+    }
+    .form-section button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .add-streamer-form button {
+      background-color: #48bb78;
+      color: white;
+    }
+    .add-streamer-form button:hover {
+      background-color: #38a169;
+    }
+    .remove-match-form button {
+      background-color: #f56565;
+      color: white;
+    }
+    .remove-match-form button:hover {
+      background-color: #e53e3e;
+    }
+    .feedback-message {
+      margin-left: 10px;
+      font-size: 14px;
+      display: none;
+    }
+    .feedback-message.success {
+      color: #48bb78;
+    }
+    .feedback-message.error {
+      color: #f56565;
+    }
+    .stream-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 10px;
+      padding: 20px;
+      min-height: 80vh;
+      box-sizing: border-box;
+    }
+    .stream-box {
+      position: relative;
+      background-color: #2d3748;
+      border-radius: 8px;
+      overflow: hidden;
+      height: 300px;
+    }
+    .stream-label {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .stream-player {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Forms Section -->
+    <div class="form-section">
+      <!-- Add Streamer Form -->
+      <div class="add-streamer-form">
+        <input type="text" id="new-streamer" placeholder="Enter Twitch Channel Name">
+        <button onclick="addStreamer()">Add Streamer</button>
+        <span id="add-feedback" class="feedback-message success">Streamer Added!</span>
+      </div>
+      <!-- Remove Match Form -->
+      <div class="remove-match-form">
+        <select id="remove-match-select">
+          <option value="">Select Match to Remove</option>
+          <!-- Options will be populated dynamically -->
+        </select>
+        <button onclick="removeMatch()">Remove Match</button>
+        <span id="remove-feedback" class="feedback-message error">Match Removed!</span>
+      </div>
+    </div>
+
+    <!-- Stream Container -->
+    <div class="stream-container" id="stream-container">
+      <!-- Initial Streams -->
+      <div class="stream-box" id="stream-1">
+        <div class="stream-label">Match 1</div>
+        <iframe class="stream-player" src="https://player.twitch.tv/?channel=playb0x&parent=t24085.github.io" allowfullscreen="true"></iframe>
+      </div>
+      <div class="stream-box" id="stream-2">
+        <div class="stream-label">Match 2</div>
+        <iframe class="stream-player" src="https://player.twitch.tv/?channel=cheezecaek&parent=t24085.github.io" allowfullscreen="true"></iframe>
+      </div>
+      <div class="stream-box" id="stream-3">
+        <div class="stream-label">Match 3</div>
+        <iframe class="stream-player" src="https://player.twitch.tv/?channel=ta_vorpalkitty&parent=t24085.github.io" allowfullscreen="true"></iframe>
+      </div>
+      <div class="stream-box" id="stream-4">
+        <div class="stream-label">Match 4</div>
+        <iframe class="stream-player" src="https://player.twitch.tv/?channel=bschrift&parent=t24085.github.io" allowfullscreen="true"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://embed.twitch.tv/embed/v1.js"></script>
+  <script>
+    let channels = ['playb0x', 'cheezecaek', 'ta_vorpalkitty', 'bschrift'];
+    let streamCount = channels.length;
+
+    // Populate the remove match dropdown
+    function populateRemoveDropdown() {
+      const select = document.getElementById('remove-match-select');
+      select.innerHTML = '<option value="">Select Match to Remove</option>';
+      channels.forEach((channel, index) => {
+        const option = document.createElement('option');
+        option.value = index + 1;
+        option.textContent = `Match ${index + 1}: ${channel}`;
+        select.appendChild(option);
+      });
+    }
+
+    function addStreamer() {
+      const newStreamerInput = document.getElementById('new-streamer');
+      const channelName = newStreamerInput.value.trim().toLowerCase();
+
+      if (!channelName) {
+        alert('Please enter a Twitch channel name.');
+        return;
+      }
+
+      if (channels.includes(channelName)) {
+        alert('This channel is already added.');
+        return;
+      }
+
+      streamCount++;
+      channels.push(channelName);
+
+      const streamContainer = document.getElementById('stream-container');
+      const newStreamBox = document.createElement('div');
+      newStreamBox.className = 'stream-box';
+      newStreamBox.id = `stream-${streamCount}`;
+      newStreamBox.innerHTML = `
+        <div class="stream-label">Match ${streamCount}</div>
+        <iframe class="stream-player" src="https://player.twitch.tv/?channel=${channelName}&parent=t24085.github.io" allowfullscreen="true"></iframe>
+      `;
+      streamContainer.appendChild(newStreamBox);
+
+      const feedback = document.getElementById('add-feedback');
+      feedback.style.display = 'inline';
+      setTimeout(() => {
+        feedback.style.display = 'none';
+      }, 2000);
+
+      newStreamerInput.value = '';
+
+      populateRemoveDropdown();
+    }
+
+    function removeMatch() {
+      const select = document.getElementById('remove-match-select');
+      const selectedIndex = parseInt(select.value);
+
+      if (!selectedIndex) {
+        alert('Please select a match to remove.');
+        return;
+      }
+
+      const streamBox = document.getElementById(`stream-${selectedIndex}`);
+      if (streamBox) {
+        streamBox.remove();
+      }
+
+      channels.splice(selectedIndex - 1, 1);
+      streamCount--;
+
+      const streamContainer = document.getElementById('stream-container');
+      const remainingBoxes = streamContainer.querySelectorAll('.stream-box');
+      remainingBoxes.forEach((box, index) => {
+        const newIndex = index + 1;
+        box.id = `stream-${newIndex}`;
+        const label = box.querySelector('.stream-label');
+        if (label) label.textContent = `Match ${newIndex}`;
+      });
+
+      const feedback = document.getElementById('remove-feedback');
+      feedback.style.display = 'inline';
+      setTimeout(() => {
+        feedback.style.display = 'none';
+      }, 2000);
+
+      populateRemoveDropdown();
+    }
+
+    // Initial population of the remove match dropdown
+    populateRemoveDropdown();
+  </script>
+</body>
+</html>
