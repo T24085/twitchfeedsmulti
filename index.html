@@ -14,13 +14,21 @@
       padding: 0;
     }
     .container {
-      position: relative; /* Allows absolute positioning of children */
       width: 100%; /* Ensure full width */
     }
+    header {
+      background: rgba(255, 255, 255, 0.1); /* Glass effect background */
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky; /* Stays at top while scrolling */
+      top: 0;
+      z-index: 10; /* Ensures header stays above streams */
+    }
     .form-section {
-      position: absolute;
-      top: 20px;
-      left: 20px;
       display: flex;
       flex-direction: column;
       gap: 15px;
@@ -71,12 +79,10 @@
       color: #f56565;
     }
     .stream-container {
-      margin-left: 320px; /* Space for forms */
-      margin-top: 150px; /* Ensures streams start below forms */
-      margin-right: 0; /* Extend to the right edge */
+      margin-top: 0; /* No need for top margin since header handles separation */
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); /* Reverted to 400px for better stream width */
-      gap: 10px; /* Handles spacing between streams */
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 10px;
       min-height: 80vh;
       box-sizing: border-box;
     }
@@ -103,9 +109,6 @@
       border: none;
     }
     .donation-section {
-      position: absolute;
-      top: 20px;
-      right: 20px;
       text-align: center;
     }
     .donation-section p {
@@ -132,59 +135,61 @@
     @media (max-width: 1200px) {
       .stream-container {
         grid-template-columns: repeat(3, 1fr); /* Force 3 columns */
-        overflow-x: auto; /* Allow horizontal scrolling if needed */
+        overflow-x: auto;
       }
     }
     @media (max-width: 1000px) {
+      header {
+        flex-direction: column;
+        gap: 15px;
+      }
       .form-section {
-        position: static;
         width: 100%;
-        margin: 0 auto;
       }
       .stream-container {
-        margin-left: 0;
-        margin-top: 0;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Smaller streams on mobile */
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         overflow-x: auto;
       }
       .donation-section {
-        position: static;
-        margin: 20px 0;
+        margin: 0;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Donation Section -->
-    <div class="donation-section">
-      <p>Support the website!</p>
-      <!-- PayPal Donate Button -->
-      <form action="https://www.paypal.com/ncp/payment/BC4EF2QC9T5GA" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
-        <input class="pp-BC4EF2QC9T5GA" type="submit" value="Donate Now" />
-        <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" />
-        <section style="font-size: 0.75rem;"> Powered by <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="paypal" style="height:0.875rem;vertical-align:middle;"/></section>
-      </form>
-    </div>
+    <!-- Header with Buttons -->
+    <header>
+      <!-- Forms Section -->
+      <div class="form-section">
+        <!-- Add Streamer Form -->
+        <div class="add-streamer-form">
+          <input type="text" id="new-streamer" placeholder="Enter Twitch Channel Name">
+          <button onclick="addStreamer()">Add Streamer</button>
+          <span id="add-feedback" class="feedback-message success">Streamer Added!</span>
+        </div>
+        <!-- Remove Match Form -->
+        <div class="remove-match-form">
+          <select id="remove-match-select">
+            <option value="">Select Match to Remove</option>
+            <!-- Options will be populated dynamically -->
+          </select>
+          <button onclick="removeMatch()">Remove Match</button>
+          <span id="remove-feedback" class="feedback-message error">Match Removed!</span>
+        </div>
+      </div>
 
-    <!-- Forms Section -->
-    <div class="form-section">
-      <!-- Add Streamer Form -->
-      <div class="add-streamer-form">
-        <input type="text" id="new-streamer" placeholder="Enter Twitch Channel Name">
-        <button onclick="addStreamer()">Add Streamer</button>
-        <span id="add-feedback" class="feedback-message success">Streamer Added!</span>
+      <!-- Donation Section -->
+      <div class="donation-section">
+        <p>Support the Tribes 3: Rivals Tournament!</p>
+        <!-- PayPal Donate Button -->
+        <form action="https://www.paypal.com/ncp/payment/BC4EF2QC9T5GA" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
+          <input class="pp-BC4EF2QC9T5GA" type="submit" value="Donate Now" />
+          <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" />
+          <section style="font-size: 0.75rem;"> Powered by <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="paypal" style="height:0.875rem;vertical-align:middle;"/></section>
+        </form>
       </div>
-      <!-- Remove Match Form -->
-      <div class="remove-match-form">
-        <select id="remove-match-select">
-          <option value="">Select Match to Remove</option>
-          <!-- Options will be populated dynamically -->
-        </select>
-        <button onclick="removeMatch()">Remove Match</button>
-        <span id="remove-feedback" class="feedback-message error">Match Removed!</span>
-      </div>
-    </div>
+    </header>
 
     <!-- Stream Container -->
     <div class="stream-container" id="stream-container">
@@ -205,7 +210,7 @@
       'wrigglespk',
       'karolk10',
       'splitsecondta',
-      'operationcats',
+      'operationscats',
       'simmons572',
       'tritiumjones',
       'beldarkk',
