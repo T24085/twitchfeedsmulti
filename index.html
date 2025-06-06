@@ -24,7 +24,7 @@
       display: flex;
       flex-direction: column;
       gap: 15px;
-      width: 300px; /* Fixed width to ensure consistent spacing */
+      width: 300px; /* Fixed width */
     }
     .form-section div {
       display: flex;
@@ -71,10 +71,10 @@
       color: #f56565;
     }
     .stream-container {
-      margin-left: 340px; /* Accounts for form width (300px) + padding */
+      margin-left: 320px; /* Slightly reduced to gain space */
       margin-top: 150px; /* Ensures streams start below forms */
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Reduced min width to fit 3 columns */
       gap: 10px;
       padding: 20px;
       min-height: 80vh;
@@ -129,7 +129,7 @@
       cursor: pointer;
     }
     /* Responsive adjustments */
-    @media (max-width: 768px) {
+    @media (max-width: 1000px) {
       .form-section {
         position: static;
         width: 100%;
