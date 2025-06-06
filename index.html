@@ -15,12 +15,16 @@
     }
     .container {
       padding: 20px;
+      position: relative; /* Allows absolute positioning of children */
     }
     .form-section {
-      margin-bottom: 20px;
+      position: absolute;
+      top: 20px;
+      left: 20px;
       display: flex;
       flex-direction: column;
       gap: 15px;
+      width: 300px; /* Fixed width to ensure consistent spacing */
     }
     .form-section div {
       display: flex;
@@ -67,6 +71,8 @@
       color: #f56565;
     }
     .stream-container {
+      margin-left: 340px; /* Accounts for form width (300px) + padding */
+      margin-top: 150px; /* Ensures streams start below forms */
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
       gap: 10px;
@@ -97,7 +103,9 @@
       border: none;
     }
     .donation-section {
-      margin: 20px 0;
+      position: absolute;
+      top: 20px;
+      right: 20px;
       text-align: center;
     }
     .donation-section p {
@@ -120,10 +128,37 @@
       line-height: 1.25rem;
       cursor: pointer;
     }
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .form-section {
+        position: static;
+        width: 100%;
+        margin: 0 auto;
+      }
+      .stream-container {
+        margin-left: 0;
+        margin-top: 0;
+      }
+      .donation-section {
+        position: static;
+        margin: 20px 0;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- Donation Section -->
+    <div class="donation-section">
+      <p>Support the Tribes 3: Rivals Tournament!</p>
+      <!-- PayPal Donate Button -->
+      <form action="https://www.paypal.com/ncp/payment/BC4EF2QC9T5GA" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
+        <input class="pp-BC4EF2QC9T5GA" type="submit" value="Donate Now" />
+        <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" />
+        <section style="font-size: 0.75rem;"> Powered by <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="paypal" style="height:0.875rem;vertical-align:middle;"/></section>
+      </form>
+    </div>
+
     <!-- Forms Section -->
     <div class="form-section">
       <!-- Add Streamer Form -->
@@ -141,17 +176,6 @@
         <button onclick="removeMatch()">Remove Match</button>
         <span id="remove-feedback" class="feedback-message error">Match Removed!</span>
       </div>
-    </div>
-
-    <!-- Donation Section -->
-    <div class="donation-section">
-      <p>Support the Tribes 3: Rivals Tournament!</p>
-      <!-- PayPal Donate Button -->
-      <form action="https://www.paypal.com/ncp/payment/BC4EF2QC9T5GA" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
-        <input class="pp-BC4EF2QC9T5GA" type="submit" value="Donate Now" />
-        <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" />
-        <section style="font-size: 0.75rem;"> Powered by <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="paypal" style="height:0.875rem;vertical-align:middle;"/></section>
-      </form>
     </div>
 
     <!-- Stream Container -->
