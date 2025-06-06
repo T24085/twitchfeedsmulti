@@ -1,43 +1,4 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -160,30 +121,57 @@
 
     <!-- Stream Container -->
     <div class="stream-container" id="stream-container">
-      <!-- Initial Streams -->
-      <div class="stream-box" id="stream-1">
-        <div class="stream-label">Match 1</div>
-        <iframe class="stream-player" src="https://player.twitch.tv/?channel=playb0x&parent=t24085.github.io" allowfullscreen="true"></iframe>
-      </div>
-      <div class="stream-box" id="stream-2">
-        <div class="stream-label">Match 2</div>
-        <iframe class="stream-player" src="https://player.twitch.tv/?channel=cheezecaek&parent=t24085.github.io" allowfullscreen="true"></iframe>
-      </div>
-      <div class="stream-box" id="stream-3">
-        <div class="stream-label">Match 3</div>
-        <iframe class="stream-player" src="https://player.twitch.tv/?channel=ta_vorpalkitty&parent=t24085.github.io" allowfullscreen="true"></iframe>
-      </div>
-      <div class="stream-box" id="stream-4">
-        <div class="stream-label">Match 4</div>
-        <iframe class="stream-player" src="https://player.twitch.tv/?channel=bschrift&parent=t24085.github.io" allowfullscreen="true"></iframe>
-      </div>
+      <!-- Stream boxes will be populated dynamically -->
     </div>
   </div>
 
   <script src="https://embed.twitch.tv/embed/v1.js"></script>
   <script>
-    let channels = ['playb0x', 'cheezecaek', 'ta_vorpalkitty', 'bschrift'];
+    // Load channels from localStorage, or use default if none exist
+    let channels = JSON.parse(localStorage.getItem('twitchChannels')) || [
+      'playb0x',
+      'cheezecaek',
+      'ta_vorpalkitty',
+      'bschrift',
+      'heavenlyjive',
+      'z4t01',
+      'wrigglespk',
+      'karolk10',
+      'splitsecondta',
+      'operationscats',
+      'simmons572',
+      'tritiumjones',
+      'beldarkk',
+      'skrooner',
+      'mikesters17',
+      'dreadtitan',
+      'visisgaming',
+      'pandoracast'
+    ];
     let streamCount = channels.length;
+
+    // Function to save channels to localStorage
+    function saveChannels() {
+      localStorage.setItem('twitchChannels', JSON.stringify(channels));
+    }
+
+    // Function to render all stream boxes
+    function renderStreams() {
+      const streamContainer = document.getElementById('stream-container');
+      streamContainer.innerHTML = ''; // Clear existing boxes
+      channels.forEach((channel, index) => {
+        const streamIndex = index + 1;
+        const streamBox = document.createElement('div');
+        streamBox.className = 'stream-box';
+        streamBox.id = `stream-${streamIndex}`;
+        streamBox.innerHTML = `
+          <div class="stream-label">Match ${streamIndex}</div>
+          <iframe class="stream-player" src="https://player.twitch.tv/?channel=${channel}&parent=t24085.github.io" allowfullscreen="true"></iframe>
+        `;
+        streamContainer.appendChild(streamBox);
+      });
+      populateRemoveDropdown();
+    }
 
     // Populate the remove match dropdown
     function populateRemoveDropdown() {
@@ -213,16 +201,8 @@
 
       streamCount++;
       channels.push(channelName);
-
-      const streamContainer = document.getElementById('stream-container');
-      const newStreamBox = document.createElement('div');
-      newStreamBox.className = 'stream-box';
-      newStreamBox.id = `stream-${streamCount}`;
-      newStreamBox.innerHTML = `
-        <div class="stream-label">Match ${streamCount}</div>
-        <iframe class="stream-player" src="https://player.twitch.tv/?channel=${channelName}&parent=t24085.github.io" allowfullscreen="true"></iframe>
-      `;
-      streamContainer.appendChild(newStreamBox);
+      saveChannels();
+      renderStreams();
 
       const feedback = document.getElementById('add-feedback');
       feedback.style.display = 'inline';
@@ -231,8 +211,6 @@
       }, 2000);
 
       newStreamerInput.value = '';
-
-      populateRemoveDropdown();
     }
 
     function removeMatch() {
@@ -244,34 +222,20 @@
         return;
       }
 
-      const streamBox = document.getElementById(`stream-${selectedIndex}`);
-      if (streamBox) {
-        streamBox.remove();
-      }
-
       channels.splice(selectedIndex - 1, 1);
       streamCount--;
-
-      const streamContainer = document.getElementById('stream-container');
-      const remainingBoxes = streamContainer.querySelectorAll('.stream-box');
-      remainingBoxes.forEach((box, index) => {
-        const newIndex = index + 1;
-        box.id = `stream-${newIndex}`;
-        const label = box.querySelector('.stream-label');
-        if (label) label.textContent = `Match ${newIndex}`;
-      });
+      saveChannels();
+      renderStreams();
 
       const feedback = document.getElementById('remove-feedback');
       feedback.style.display = 'inline';
       setTimeout(() => {
         feedback.style.display = 'none';
       }, 2000);
-
-      populateRemoveDropdown();
     }
 
-    // Initial population of the remove match dropdown
-    populateRemoveDropdown();
+    // Initial rendering of streams on page load
+    renderStreams();
   </script>
 </body>
 </html>
