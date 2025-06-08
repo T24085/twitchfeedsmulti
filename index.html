@@ -41,7 +41,7 @@
     }
     .form-section input[type="text"], .form-section select {
       padding: 8px;
-      background-color: rgba(45, 55, 72, 0.8); /* Glass effect background */
+      background-color: rgba(45, 55, 72, 0.8);
       color: white;
       border: 1px solid #4a5568;
       border-radius: 4px;
@@ -91,6 +91,8 @@
       border-radius: 4px;
       padding: 10px;
       width: 200px;
+      max-height: 300px; /* Limit height for scrolling */
+      overflow-y: auto; /* Enable vertical scrolling */
     }
     .filter-options select {
       width: 100%;
@@ -122,7 +124,8 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
       gap: 10px;
-      min-height: 80vh;
+      min-height: 0; /* Removed min-height to avoid clipping */
+      height: auto; /* Allow full height */
       box-sizing: border-box;
     }
     .stream-box {
@@ -146,6 +149,27 @@
       width: 100%;
       height: 100%;
       border: none;
+    }
+    .chat-container {
+      display: none;
+      height: 400px;
+      border: 1px solid #4a5568;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .chat-toggle {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      padding: 5px 10px;
+      background-color: #48bb78;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .chat-toggle:hover {
+      background-color: #38a169;
     }
     .donation-section {
       text-align: center;
@@ -197,6 +221,12 @@
       }
       .donation-section {
         margin: 0;
+      }
+      .stream-box {
+        height: 250px;
+      }
+      .chat-container {
+        height: 300px;
       }
     }
   </style>
@@ -292,6 +322,7 @@
       'gnome827',
       'cloutac'
     ];
+    console.log('Channels length:', channels.length); // Debug log
     let streamCount = channels.length;
     let hiddenChannels = JSON.parse(localStorage.getItem('hiddenChannels')) || [];
 
@@ -301,11 +332,12 @@
       localStorage.setItem('hiddenChannels', JSON.stringify(hiddenChannels));
     }
 
-    // Function to render all stream boxes
+    // Function to render all stream boxes with chat toggle
     function renderStreams() {
       const streamContainer = document.getElementById('stream-container');
       streamContainer.innerHTML = ''; // Clear existing boxes
       const visibleChannels = channels.filter(channel => !hiddenChannels.includes(channel));
+      console.log('Visible channels length:', visibleChannels.length); // Debug log
       visibleChannels.forEach((channel, index) => {
         const streamIndex = index + 1;
         const streamBox = document.createElement('div');
@@ -314,11 +346,25 @@
         streamBox.innerHTML = `
           <div class="stream-label">Match ${streamIndex}</div>
           <iframe class="stream-player" src="https://player.twitch.tv/?channel=${channel}&parent=t24085.github.io" allowfullscreen="true"></iframe>
+          <button class="chat-toggle" onclick="toggleChat('${channel}', ${streamIndex})">Toggle Chat</button>
+          <div class="chat-container" id="chat-${streamIndex}"></div>
         `;
         streamContainer.appendChild(streamBox);
       });
       populateRemoveDropdown();
       populateFilterDropdown();
+    }
+
+    // Function to toggle chat display
+    function toggleChat(channel, streamIndex) {
+      const chatContainer = document.getElementById(`chat-${streamIndex}`);
+      if (chatContainer.style.display === 'none' || chatContainer.style.display === '') {
+        chatContainer.innerHTML = `<iframe src="https://www.twitch.tv/embed/${channel}/chat" height="400" width="100%" frameborder="0"></iframe>`;
+        chatContainer.style.display = 'block';
+      } else {
+        chatContainer.innerHTML = '';
+        chatContainer.style.display = 'none';
+      }
     }
 
     // Populate the remove match dropdown
@@ -331,6 +377,7 @@
         option.textContent = `Match ${index + 1}: ${channel}`;
         select.appendChild(option);
       });
+      console.log('Remove dropdown options:', select.options.length); // Debug log
     }
 
     // Populate the filter dropdown
@@ -343,6 +390,7 @@
         option.textContent = `Match ${index + 1}: ${channel}`;
         select.appendChild(option);
       });
+      console.log('Filter dropdown options:', select.options.length); // Debug log
     }
 
     function addStreamer() {
