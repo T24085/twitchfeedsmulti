@@ -41,7 +41,7 @@
     }
     .form-section input[type="text"], .form-section select {
       padding: 8px;
-      background-color: #2d3748;
+      background-color: rgba(45, 55, 72, 0.8); /* Glass effect background */
       color: white;
       border: 1px solid #4a5568;
       border-radius: 4px;
@@ -67,12 +67,45 @@
     .remove-match-form button:hover {
       background-color: #e53e3e;
     }
+    .filter-section {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
     .filter-section button {
       background-color: #3182ce;
       color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
     }
     .filter-section button:hover {
       background-color: #2b6cb0;
+    }
+    .filter-options {
+      display: none;
+      margin-top: 10px;
+      background: rgba(45, 55, 72, 0.8);
+      backdrop-filter: blur(10px);
+      border-radius: 4px;
+      padding: 10px;
+      width: 200px;
+    }
+    .filter-options select {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 14px;
+    }
+    .filter-options select option {
+      background: #2d3748;
+      color: white;
+    }
+    .filter-options button {
+      margin-top: 5px;
+      width: 100%;
     }
     .feedback-message {
       margin-left: 10px;
@@ -152,6 +185,12 @@
       .form-section {
         width: 100%;
       }
+      .filter-section {
+        align-items: center;
+      }
+      .filter-options {
+        width: 100%;
+      }
       .stream-container {
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         overflow-x: auto;
@@ -188,8 +227,8 @@
       <!-- Filter Section -->
       <div class="filter-section">
         <button onclick="toggleFilter()">Filter Streams</button>
-        <div id="filter-options" style="display: none; margin-top: 10px;">
-          <select id="filter-select" multiple size="5">
+        <div class="filter-options" id="filter-options">
+          <select id="filter-select" multiple>
             <!-- Options will be populated dynamically -->
           </select>
           <button onclick="hideSelectedChannels()">Hide Selected</button>
