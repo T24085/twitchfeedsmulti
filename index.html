@@ -14,25 +14,25 @@
       padding: 0;
     }
     .container {
-      width: 100%; /* Ensure full width */
+      width: 100%;
     }
     header {
-      background: rgba(255, 255, 255, 0.1); /* Glass effect background */
+      background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(255, 255, 255, 0.2);
       padding: 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      position: sticky; /* Stays at top while scrolling */
+      position: sticky;
       top: 0;
-      z-index: 10; /* Ensures header stays above streams */
+      z-index: 10;
     }
     .form-section {
       display: flex;
       flex-direction: column;
       gap: 15px;
-      width: 300px; /* Fixed width */
+      width: 300px;
     }
     .form-section div {
       display: flex;
@@ -67,6 +67,13 @@
     .remove-match-form button:hover {
       background-color: #e53e3e;
     }
+    .filter-section button {
+      background-color: #3182ce;
+      color: white;
+    }
+    .filter-section button:hover {
+      background-color: #2b6cb0;
+    }
     .feedback-message {
       margin-left: 10px;
       font-size: 14px;
@@ -79,7 +86,6 @@
       color: #f56565;
     }
     .stream-container {
-      margin-top: 0; /* No need for top margin since header handles separation */
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
       gap: 10px;
@@ -134,7 +140,7 @@
     /* Responsive adjustments */
     @media (max-width: 1200px) {
       .stream-container {
-        grid-template-columns: repeat(3, 1fr); /* Force 3 columns */
+        grid-template-columns: repeat(3, 1fr);
         overflow-x: auto;
       }
     }
@@ -179,9 +185,21 @@
         </div>
       </div>
 
+      <!-- Filter Section -->
+      <div class="filter-section">
+        <button onclick="toggleFilter()">Filter Streams</button>
+        <div id="filter-options" style="display: none; margin-top: 10px;">
+          <select id="filter-select" multiple size="5">
+            <!-- Options will be populated dynamically -->
+          </select>
+          <button onclick="hideSelectedChannels()">Hide Selected</button>
+          <button onclick="showAllChannels()">Show All</button>
+        </div>
+      </div>
+
       <!-- Donation Section -->
       <div class="donation-section">
-        <p>Support the Tribes 3: Rivals Stream Tracker!</p>
+        <p>Support the Tribes 3: Rivals Tournament!</p>
         <!-- PayPal Donate Button -->
         <form action="https://www.paypal.com/ncp/payment/BC4EF2QC9T5GA" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
           <input class="pp-BC4EF2QC9T5GA" type="submit" value="Donate Now" />
@@ -219,34 +237,37 @@
       'dreadtitan',
       'visisgaming',
       'pandoracast',
-      'Isoitiro',
-      'VAXITYlol',
+      'isoitiro',
+      'vaxitylol',
       'seansguitarworldbang',
       'prizzo4real',
-      'Apcizzle',
-      'SlowPok3',
-      'iAmYouGaming',
-      'MastinMusic',
-      'WhoLuvsDean',
+      'apcizzle',
+      'slowpok3',
+      'iamyoutgaming',
+      'mastinmusic',
+      'wholovsdean',
       'more_horchata',
-      'PRJ_TV',
-      'OoOoO_Live',
-      'LordBuschguy',
+      'prj_tv',
+      'ooooo_live',
+      'lordbuschguy',
       'gnome827',
-      'CloutAC'
+      'cloutac'
     ];
     let streamCount = channels.length;
+    let hiddenChannels = JSON.parse(localStorage.getItem('hiddenChannels')) || [];
 
-    // Function to save channels to localStorage
+    // Function to save channels and hidden channels to localStorage
     function saveChannels() {
       localStorage.setItem('twitchChannels', JSON.stringify(channels));
+      localStorage.setItem('hiddenChannels', JSON.stringify(hiddenChannels));
     }
 
     // Function to render all stream boxes
     function renderStreams() {
       const streamContainer = document.getElementById('stream-container');
       streamContainer.innerHTML = ''; // Clear existing boxes
-      channels.forEach((channel, index) => {
+      const visibleChannels = channels.filter(channel => !hiddenChannels.includes(channel));
+      visibleChannels.forEach((channel, index) => {
         const streamIndex = index + 1;
         const streamBox = document.createElement('div');
         streamBox.className = 'stream-box';
@@ -258,6 +279,7 @@
         streamContainer.appendChild(streamBox);
       });
       populateRemoveDropdown();
+      populateFilterDropdown();
     }
 
     // Populate the remove match dropdown
@@ -267,6 +289,18 @@
       channels.forEach((channel, index) => {
         const option = document.createElement('option');
         option.value = index + 1;
+        option.textContent = `Match ${index + 1}: ${channel}`;
+        select.appendChild(option);
+      });
+    }
+
+    // Populate the filter dropdown
+    function populateFilterDropdown() {
+      const select = document.getElementById('filter-select');
+      select.innerHTML = '';
+      channels.forEach((channel, index) => {
+        const option = document.createElement('option');
+        option.value = channel;
         option.textContent = `Match ${index + 1}: ${channel}`;
         select.appendChild(option);
       });
@@ -315,6 +349,41 @@
       renderStreams();
 
       const feedback = document.getElementById('remove-feedback');
+      feedback.style.display = 'inline';
+      setTimeout(() => {
+        feedback.style.display = 'none';
+      }, 2000);
+    }
+
+    function toggleFilter() {
+      const filterOptions = document.getElementById('filter-options');
+      filterOptions.style.display = filterOptions.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function hideSelectedChannels() {
+      const select = document.getElementById('filter-select');
+      const selectedOptions = Array.from(select.selectedOptions).map(option => option.value);
+      if (selectedOptions.length === 0) {
+        alert('Please select at least one channel to hide.');
+        return;
+      }
+      hiddenChannels = [...new Set([...hiddenChannels, ...selectedOptions])];
+      saveChannels();
+      renderStreams();
+
+      const feedback = document.getElementById('remove-feedback');
+      feedback.style.display = 'inline';
+      setTimeout(() => {
+        feedback.style.display = 'none';
+      }, 2000);
+    }
+
+    function showAllChannels() {
+      hiddenChannels = [];
+      saveChannels();
+      renderStreams();
+
+      const feedback = document.getElementById('add-feedback');
       feedback.style.display = 'inline';
       setTimeout(() => {
         feedback.style.display = 'none';
