@@ -18,7 +18,7 @@
     }
     header {
       background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px); /* Supported in Edge 79+, fallback below */
+      backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(255, 255, 255, 0.2);
       padding: 20px;
       display: flex;
@@ -28,10 +28,9 @@
       top: 0;
       z-index: 10;
     }
-    /* Fallback for browsers without backdrop-filter support (e.g., older Edge) */
     @supports not (backdrop-filter: blur(10px)) {
       header {
-        background: #2d3748; /* Solid dark background */
+        background: #2d3748;
       }
     }
     .form-section {
@@ -100,16 +99,19 @@
       max-height: 300px;
       overflow-y: auto;
     }
-    .filter-options select {
-      width: 100%;
-      background: transparent;
-      border: none;
-      color: white;
+    .filter-options .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 0;
       font-size: 14px;
     }
-    .filter-options select option {
-      background: #2d3748;
+    .filter-options input[type="checkbox"] {
+      accent-color: #3182ce;
+    }
+    .filter-options label {
       color: white;
+      cursor: pointer;
     }
     .filter-options button {
       margin-top: 5px;
@@ -162,7 +164,6 @@
       margin-bottom: 10px;
       font-size: 16px;
     }
-    /* PayPal Button Styles */
     .pp-BC4EF2QC9T5GA {
       text-align: center;
       border: none;
@@ -178,7 +179,6 @@
       line-height: 1.25rem;
       cursor: pointer;
     }
-    /* Responsive adjustments */
     @media (max-width: 1200px) {
       .stream-container {
         grid-template-columns: repeat(3, 1fr);
@@ -214,43 +214,31 @@
 </head>
 <body>
   <div class="container">
-    <!-- Header with Buttons -->
     <header>
-      <!-- Forms Section -->
       <div class="form-section">
-        <!-- Add Streamer Form -->
         <div class="add-streamer-form">
           <input type="text" id="new-streamer" placeholder="Enter Twitch Channel Name">
           <button onclick="addStreamer()">Add Streamer</button>
           <span id="add-feedback" class="feedback-message success">Streamer Added!</span>
         </div>
-        <!-- Remove Match Form -->
         <div class="remove-match-form">
           <select id="remove-match-select">
             <option value="">Select Match to Remove</option>
-            <!-- Options will be populated dynamically -->
           </select>
           <button onclick="removeMatch()">Remove Match</button>
           <span id="remove-feedback" class="feedback-message error">Match Removed!</span>
         </div>
       </div>
-
-      <!-- Filter Section -->
       <div class="filter-section">
         <button onclick="toggleFilter()">Filter Streams</button>
         <div class="filter-options" id="filter-options">
-          <select id="filter-select" multiple>
-            <!-- Options will be populated dynamically -->
-          </select>
+          <div id="filter-checkboxes"></div>
           <button onclick="hideSelectedChannels()">Hide Selected</button>
           <button onclick="showAllChannels()">Show All</button>
         </div>
       </div>
-
-      <!-- Donation Section -->
       <div class="donation-section">
         <p>Support the Tribes 3: Rivals Tournament!</p>
-        <!-- PayPal Donate Button -->
         <form action="https://www.paypal.com/ncp/payment/BC4EF2QC9T5GA" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
           <input class="pp-BC4EF2QC9T5GA" type="submit" value="Donate Now" />
           <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" />
@@ -258,67 +246,34 @@
         </form>
       </div>
     </header>
-
-    <!-- Stream Container -->
-    <div class="stream-container" id="stream-container">
-      <!-- Stream boxes will be populated dynamically -->
-    </div>
+    <div class="stream-container" id="stream-container"></div>
   </div>
 
   <script src="https://embed.twitch.tv/embed/v1.js"></script>
   <script>
-    // Load channels from localStorage, or use default if none exist
     let channels = JSON.parse(localStorage.getItem('twitchChannels')) || [
-      'playb0x',
-      'cheezecaek',
-      'ta_vorpalkitty',
-      'bschrift',
-      'heavenlyjive',
-      'z4t01',
-      'wrigglespk',
-      'karolk10',
-      'splitsecondta',
-      'operationcats',
-      'simmons572',
-      'tritiumjones',
-      'beldarkk',
-      'skrooner',
-      'mikesters17',
-      'dreadtitan',
-      'visisgaming',
-      'pandoracast',
-      'isoitiro',
-      'vaxitylol',
-      'seansguitarworldbang',
-      'prizzo4real',
-      'apcizzle',
-      'slowpok3',
-      'iamyougaming',
-      'mastinmusic',
-      'wholuvsdean',
-      'more_horchata',
-      'prj_tv',
-      'o0oO_Live',
-      'lordbuschguy',
-      'gnome827',
-      'cloutac'
+      'playb0x', 'cheezecaek', 'ta_vorpalkitty', 'bschrift', 'heavenlyjive',
+      'z4t01', 'wrigglespk', 'karolk10', 'splitsecondta', 'operationcats',
+      'simmons572', 'tritiumjones', 'beldarkk', 'skrooner', 'mikesters17',
+      'dreadtitan', 'visisgaming', 'pandoracast', 'isoitiro', 'vaxitylol',
+      'seansguitarworldbang', 'prizzo4real', 'apcizzle', 'slowpok3', 'iamyougaming',
+      'mastinmusic', 'wholuvsdean', 'more_horchata', 'prj_tv', 'o0oO_Live',
+      'lordbuschguy', 'gnome827', 'cloutac'
     ];
-    console.log('Channels length:', channels.length); // Debug log
+    console.log('Channels length:', channels.length);
     let streamCount = channels.length;
     let hiddenChannels = JSON.parse(localStorage.getItem('hiddenChannels')) || [];
 
-    // Function to save channels and hidden channels to localStorage
     function saveChannels() {
       localStorage.setItem('twitchChannels', JSON.stringify(channels));
       localStorage.setItem('hiddenChannels', JSON.stringify(hiddenChannels));
     }
 
-    // Function to render all stream boxes
     function renderStreams() {
       const streamContainer = document.getElementById('stream-container');
-      streamContainer.innerHTML = ''; // Clear existing boxes
+      streamContainer.innerHTML = '';
       const visibleChannels = channels.filter(channel => !hiddenChannels.includes(channel));
-      console.log('Visible channels length:', visibleChannels.length); // Debug log
+      console.log('Visible channels length:', visibleChannels.length);
       visibleChannels.forEach((channel, index) => {
         const streamIndex = index + 1;
         const streamBox = document.createElement('div');
@@ -331,10 +286,9 @@
         streamContainer.appendChild(streamBox);
       });
       populateRemoveDropdown();
-      populateFilterDropdown();
+      populateFilterCheckboxes();
     }
 
-    // Populate the remove match dropdown
     function populateRemoveDropdown() {
       const select = document.getElementById('remove-match-select');
       select.innerHTML = '<option value="">Select Match to Remove</option>';
@@ -344,20 +298,22 @@
         option.textContent = `Match ${index + 1}: ${channel}`;
         select.appendChild(option);
       });
-      console.log('Remove dropdown options:', select.options.length); // Debug log
+      console.log('Remove dropdown options:', select.options.length);
     }
 
-    // Populate the filter dropdown
-    function populateFilterDropdown() {
-      const select = document.getElementById('filter-select');
-      select.innerHTML = '';
+    function populateFilterCheckboxes() {
+      const container = document.getElementById('filter-checkboxes');
+      container.innerHTML = '';
       channels.forEach((channel, index) => {
-        const option = document.createElement('option');
-        option.value = channel;
-        option.textContent = `Match ${index + 1}: ${channel}`;
-        select.appendChild(option);
+        const div = document.createElement('div');
+        div.className = 'checkbox-item';
+        div.innerHTML = `
+          <input type="checkbox" id="filter-${channel}" value="${channel}">
+          <label for="filter-${channel}">Match ${index + 1}: ${channel}</label>
+        `;
+        container.appendChild(div);
       });
-      console.log('Filter dropdown options:', select.options.length); // Debug log
+      console.log('Filter checkboxes count:', container.children.length);
     }
 
     function addStreamer() {
@@ -415,13 +371,13 @@
     }
 
     function hideSelectedChannels() {
-      const select = document.getElementById('filter-select');
-      const selectedOptions = Array.from(select.selectedOptions).map(option => option.value);
-      if (selectedOptions.length === 0) {
+      const checkboxes = document.querySelectorAll('#filter-checkboxes input:checked');
+      const selectedChannels = Array.from(checkboxes).map(cb => cb.value);
+      if (selectedChannels.length === 0) {
         alert('Please select at least one channel to hide.');
         return;
       }
-      hiddenChannels = [...new Set([...hiddenChannels, ...selectedOptions])];
+      hiddenChannels = [...new Set([...hiddenChannels, ...selectedChannels])];
       saveChannels();
       renderStreams();
 
@@ -444,7 +400,6 @@
       }, 2000);
     }
 
-    // Initial rendering of streams on page load
     renderStreams();
   </script>
 </body>
